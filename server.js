@@ -8,9 +8,9 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 // AYARLARINIZ
-const SUNUCU_IP = 'play.wiencraft.com'; // Örn: sunucunuz.aternos.me
+const SUNUCU_IP = 'mutgunmc.mcsh.io'; // Örn: sunucunuz.aternos.me
 const PORT = 25565;                      // Aternos portunuz
-const BOT_SIFRESI = '81168';        // Bot giriş şifreniz
+const BOT_SIFRESI = '8116812381168123';        // Bot giriş şifreniz
 
 let bot = null;
 
@@ -18,8 +18,8 @@ function createBot() {
   bot = mineflayer.createBot({
     host: SUNUCU_IP,
     port: PORT,
-    username: 'Webamnu',
-    version: '1.21.10' // Sunucu sürümünüz
+    username: 'mutgunAFK',
+    version: '1.21.4' // Sunucu sürümünüz
   });
 
   bot.on('spawn', () => {
