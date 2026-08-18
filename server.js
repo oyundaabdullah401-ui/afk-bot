@@ -7,41 +7,33 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+// AYARLARINIZ
+const SUNUCU_IP = 'mutgunmc.mcsh.io'; // Örn: sunucunuz.aternos.me
+const PORT = 25565;                      // Aternos portunuz
+const BOT_SIFRESI = '81168';        // Bot giriş şifreniz
+
 let bot = null;
-let jumpInterval = null;
 
-// BOT BAŞLATMA VE DEĞİŞTİRME FONKSİYONU
-function startBot(config) {
-  // Eğer çalışan eski bir bot varsa bağlantıyı güvenle kapat
-  if (bot) {
-    try { bot.quit(); } catch(e) {}
-    bot = null;
-  }
-  if (jumpInterval) clearInterval(jumpInterval);
-
-  io.emit('chatMessage', { sender: 'SİSTEM', text: `[${config.host}:${config.port}] sunucusuna bağlanılıyor...` });
-
+function createBot() {
   bot = mineflayer.createBot({
-    host: config.host,
-    port: parseInt(config.port) || 25565,
-    username: config.username || 'AFK_Bot_724',
-    version: config.version ? config.version : false
+    host: SUNUCU_IP,
+    port: PORT,
+    username: 'MutGunAFK',
+    version: '1.20.1' // Sunucu sürümünüz
   });
 
   bot.on('spawn', () => {
-    io.emit('chatMessage', { sender: 'SİSTEM', text: 'Sunucuya başarıyla bağlandı!' });
+    io.emit('chatMessage', { sender: 'SİSTEM', text: 'Bot sunucuya başarıyla bağlandı!' });
 
-    // Şifre varsa otomatik girer
-    if (config.password) {
-      setTimeout(() => {
-        bot.chat(`/login ${config.password}`);
-        bot.chat(`/register ${config.password} ${config.password}`);
-      }, 2000);
-    }
+    // Şifre Girişi
+    setTimeout(() => {
+      bot.chat(`/login ${BOT_SIFRESI}`);
+      bot.chat(`/register ${BOT_SIFRESI} ${BOT_SIFRESI}`);
+    }, 2000);
 
     // AFK Zıplama Döngüsü
-    jumpInterval = setInterval(() => {
-      if (bot && bot.entity) {
+    setInterval(() => {
+      if (bot) {
         bot.setControlState('jump', true);
         setTimeout(() => bot.setControlState('jump', false), 500);
       }
@@ -57,7 +49,8 @@ function startBot(config) {
   });
 
   bot.on('end', () => {
-    io.emit('chatMessage', { sender: 'SİSTEM', text: 'Sunucu bağlantısı koptu.' });
+    io.emit('chatMessage', { sender: 'SİSTEM', text: 'Bağlantı koptu, 15sn sonra tekrar bağlanılıyor...' });
+    setTimeout(createBot, 15000);
   });
 
   bot.on('error', (err) => {
@@ -65,7 +58,9 @@ function startBot(config) {
   });
 }
 
-// MOBİL UYUMLU GELİŞMİŞ WEB PANEL ARAYÜZÜ
+createBot();
+
+// MOBİL UYUMLU WEB PANEL ARAYÜZÜ (HTML)
 app.get('/', (req, res) => {
   res.send(`
 <!DOCTYPE html>
@@ -73,85 +68,46 @@ app.get('/', (req, res) => {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AFK Bot Kontrol Paneli</title>
+  <title>AFK Bot Chat Paneli</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #121212; color: #fff; display: flex; flex-direction: column; height: 100vh; }
-    
-    /* Sunucu Bağlantı Formu */
-    .config-panel { background: #1f1f1f; padding: 12px; border-bottom: 2px solid #333; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .config-panel input { padding: 8px; border-radius: 5px; border: 1px solid #444; background: #2a2a2a; color: #fff; font-size: 0.85rem; outline: none; }
-    .config-panel button { grid-column: span 2; padding: 10px; border-radius: 5px; border: none; background: #2196f3; color: white; font-weight: bold; cursor: pointer; }
-    .config-panel button:active { background: #1976d2; }
-
-    /* Chat Alanı */
-    #chat-box { flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
-    .msg { background: #2a2a2a; padding: 8px 12px; border-radius: 6px; font-size: 0.9rem; word-break: break-word; }
+    header { background: #1f1f1f; padding: 15px; text-align: center; font-weight: bold; font-size: 1.1rem; border-bottom: 1px solid #333; color: #4caf50; }
+    #chat-box { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+    .msg { background: #2a2a2a; padding: 10px; border-radius: 8px; font-size: 0.95rem; word-break: break-word; line-height: 1.4; }
     .msg.system { background: #3a2e10; color: #ffca28; }
     .msg.bot { background: #1b3a20; color: #81c784; }
-    .msg.hata { background: #3e1a1a; color: #ef5350; }
-
-    /* Mesaj Gönderme Formu */
-    .send-form { display: flex; padding: 10px; background: #1f1f1f; gap: 8px; border-top: 1px solid #333; }
-    .send-form input { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #444; background: #2a2a2a; color: #fff; font-size: 0.95rem; outline: none; }
-    .send-form button { padding: 10px 16px; border-radius: 6px; border: none; background: #4caf50; color: white; font-weight: bold; cursor: pointer; }
+    form { display: flex; padding: 10px; background: #1f1f1f; gap: 8px; border-top: 1px solid #333; }
+    input { flex: 1; padding: 12px; border-radius: 6px; border: 1px solid #444; background: #2a2a2a; color: #fff; font-size: 1rem; outline: none; }
+    button { padding: 12px 20px; border-radius: 6px; border: none; background: #4caf50; color: white; font-weight: bold; font-size: 1rem; cursor: pointer; }
+    button:active { background: #388e3c; }
   </style>
   <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
-
-  <!-- SUNUCU AYARLARI FORMU -->
-  <div class="config-panel">
-    <input type="text" id="host" placeholder="Sunucu IP (Örn: ornek.aternos.me)">
-    <input type="number" id="port" placeholder="Port (Örn: 25565)" value="25565">
-    <input type="text" id="version" placeholder="Sürüm (Örn: 1.20.1 veya boş)">
-    <input type="password" id="password" placeholder="Bot Şifresi (Varsa)">
-    <button onclick="connectServer()">🚀 Sunucuya Bağlan / Değiştir</button>
-  </div>
-
-  <!-- CHAT PENCERESİ -->
+  <header>🎮 Minecraft AFK Bot Paneli</header>
   <div id="chat-box"></div>
-
-  <!-- MESAJ GÖNDERME -->
-  <form class="send-form" id="chat-form">
-    <input type="text" id="msg-input" placeholder="Komut veya mesaj yazın..." autocomplete="off" />
+  <form id="chat-form">
+    <input type="text" id="msg-input" placeholder="Mesaj veya komut yazın..." autocomplete="off" />
     <button type="submit">Gönder</button>
   </form>
 
   <script>
     const socket = io();
     const chatBox = document.getElementById('chat-box');
-
-    function connectServer() {
-      const host = document.getElementById('host').value.trim();
-      const port = document.getElementById('port').value.trim();
-      const version = document.getElementById('version').value.trim();
-      const password = document.getElementById('password').value.trim();
-
-      if (!host) {
-        alert('Lütfen en azından bir Sunucu IP adresi girin!');
-        return;
-      }
-
-      socket.emit('changeServer', { host, port, version, password });
-    }
+    const form = document.getElementById('chat-form');
+    const input = document.getElementById('msg-input');
 
     socket.on('chatMessage', (data) => {
       const msgDiv = document.createElement('div');
-      let typeClass = '';
-      if (data.sender === 'SİSTEM') typeClass = 'system';
-      if (data.sender === 'BOT') typeClass = 'bot';
-      if (data.sender === 'HATA') typeClass = 'hata';
-
-      msgDiv.className = 'msg ' + typeClass;
+      msgDiv.className = 'msg ' + (data.sender === 'SİSTEM' ? 'system' : data.sender === 'BOT' ? 'bot' : '');
       msgDiv.textContent = data.text;
       chatBox.appendChild(msgDiv);
       chatBox.scrollTop = chatBox.scrollHeight;
     });
 
-    document.getElementById('chat-form').addEventListener('submit', (e) => {
+    form.addEventListener('submit', (e) => {
       e.preventDefault();
-      const input = document.getElementById('msg-input');
       if (input.value.trim()) {
         socket.emit('sendMessage', input.value.trim());
         input.value = '';
@@ -163,23 +119,15 @@ app.get('/', (req, res) => {
   `);
 });
 
-// SOCKET.IO ETKİLEŞİMLERİ
+// Telefondan gönderilen mesajı oyuna iletme
 io.on('connection', (socket) => {
-  // Web panelinden gelen yeni sunucuya bağlanma isteği
-  socket.on('changeServer', (config) => {
-    startBot(config);
-  });
-
-  // Web panelinden gönderilen chat/komut mesajı
   socket.on('sendMessage', (msg) => {
-    if (bot && bot.entity) {
+    if (bot) {
       bot.chat(msg);
       io.emit('chatMessage', { sender: 'BOT', text: '[SİZ]: ' + msg });
-    } else {
-      socket.emit('chatMessage', { sender: 'HATA', text: 'Şu an aktif bir sunucu bağlantısı yok!' });
     }
   });
 });
 
 const PORT_WEB = process.env.PORT || 3000;
-server.listen(PORT_WEB, () => console.log('Çoklu Sunucu Destekli Panel Aktif!'));
+server.listen(PORT_WEB, () => console.log('Panel aktif!'));
