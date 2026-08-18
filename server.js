@@ -13,7 +13,7 @@ function createBot() {
     const bot = mineflayer.createBot({
     host: 'play.wiencraft.com', // Örn: sunucum.aternos.me (Sonunda port olmayacak!)
     port: 25565,                 // Aternos'un verdiği 5 haneli port numarası
-    username: 'MutGunAFK',
+    username: 'WeBambu',
     version: '1.21.4'            // false yerine sunucunuzun sürümünü yazın (Örn: '1.20.1', '1.16.5')
   });
   
