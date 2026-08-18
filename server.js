@@ -7,14 +7,14 @@ app.get('/', (req, res) => res.send('AFK Botu Aktif!'));
 app.listen(process.env.PORT || 3000);
 
 // BOT VE ŞİFRE AYARLARI
-const BOT_SIFRESI = '81168'; // Botun sunucudaki şifresini buraya yazın
+const BOT_SIFRESI = '8116812381168123'; // Botun sunucudaki şifresini buraya yazın
 
 function createBot() {
     const bot = mineflayer.createBot({
-    host: 'play.wiencraft.com', // Örn: sunucum.aternos.me (Sonunda port olmayacak!)
+    host: 'mutgunmc.mcsh.io', // Örn: sunucum.aternos.me (Sonunda port olmayacak!)
     port: 25565,                 // Aternos'un verdiği 5 haneli port numarası
-    username: 'Webambu',
-    version: '1.21'            // false yerine sunucunuzun sürümünü yazın (Örn: '1.20.1', '1.16.5')
+    username: 'mutgunmcAFK',
+    version: '1.21.4'            // false yerine sunucunuzun sürümünü yazın (Örn: '1.20.1', '1.16.5')
   });
   
 
